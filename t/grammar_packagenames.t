@@ -30,17 +30,17 @@ use miniparser;
 }
 
 subtest "Version strict conformance" => sub {
-  my ( %X_fail ) = map { $_ => 1 } qw( 1.0.1_pr 1.0.1pr 1.0.1pre );
+  my (%X_fail) = map { $_ => 1 } qw( 1.0.1_pr 1.0.1pr 1.0.1pre );
 
   for my $version (qw( 1 1.1 1.5 1.0.1 1.0.1a 1.0.1pr 1.0.1pre 1.0.1_pr 1.0.1_pre 1.0.1_p  )) {
     subtest "V = $version" => sub {
       my ($result) = miniparser::strict_check( [$version], 'Version' );
-      is ( scalar keys %{$result},1 , "Expected only 1 key back($version)");
+      is( scalar keys %{$result}, 1, "Expected only 1 key back($version)" );
       my ($key) = keys %{$result};
-      is ( $key, $version, "Key matches version being tested($version)" );
+      is( $key, $version, "Key matches version being tested($version)" );
       my ($hash) = values %{$result};
-      if ( not ref $hash eq 'HASH' ){ 
-        if ( exists $X_fail{$version} ) { 
+      if ( not ref $hash eq 'HASH' ) {
+        if ( exists $X_fail{$version} ) {
           pass("$version is correctly not a version");
           return;
         }
@@ -52,36 +52,38 @@ subtest "Version strict conformance" => sub {
         fail("Expected $version to not be a version but parsed anyway");
       }
       ok( exists $hash->{Version}, 'Version was detected' );
-      is( $hash->{Version} , $version, 'Detected version is identical' );
-#      say Data::Dump::pp( miniparser::strict_check( [$version], 'Version' ) );
-    }
+      is( $hash->{Version}, $version, 'Detected version is identical' );
+
+      #      say Data::Dump::pp( miniparser::strict_check( [$version], 'Version' ) );
+      }
   }
 };
 
-subtest "CPV Parsing" => sub { 
-  my @items = (      
-    [qw( dev-lang perl 5.10.1 ) ],
-    [qw( dev-lang nqp  0.1.2  )],
-  );
-  for my $test ( @items ) {
+subtest "CPV Parsing" => sub {
+  my @items = ( [qw( dev-lang perl 5.10.1 )], [qw( dev-lang nqp  0.1.2  )], );
+  for my $test (@items) {
     my $name = sprintf "%s/%s-%s", @{$test};
-    subtest "CPV parse item:  $name" => sub { 
-      my ( $result ) = miniparser::check_cpv( $test, );
-      is( ref $result , 'ARRAY' , 'Result is an array') or return;
-      ok( exists $result->[0] , 'Array has 0 key' ) or return;
+    subtest "CPV parse item:  $name" => sub {
+      my ($result) = miniparser::check_cpv( $test, );
+      is( ref $result, 'ARRAY', 'Result is an array' ) or return;
+      ok( exists $result->[0], 'Array has 0 key' ) or return;
       my $hash = $result->[0];
-      is( ref $hash, 'HASH' , 'Array 0 is a hash' ) or return;
-      ok( exists $hash->{xcpv_match} , 'Hash has xcpv_match field' ) or return;
+      is( ref $hash, 'HASH', 'Array 0 is a hash' ) or return;
+      ok( exists $hash->{xcpv_match}, 'Hash has xcpv_match field' ) or return;
       $hash = $hash->{xcpv_match};
-      is( ref $hash, 'HASH' , 'XCPV is a hash' ) or return;
-      ok( exists $hash->{CPV} , 'XCPV has CPV key') or return;
+      is( ref $hash, 'HASH', 'XCPV is a hash' ) or return;
+      ok( exists $hash->{CPV}, 'XCPV has CPV key' ) or return;
       $hash = $hash->{CPV};
-      is( ref $hash , 'HASH', 'CPV is a Hash' ) or return;
-      is_deeply( $hash, {
-        CategoryName => $test->[0],
-        PackageName  => $test->[1],
-        Version => $test->[2],
-      },  'Parse Data is as-expected');
+      is( ref $hash, 'HASH', 'CPV is a Hash' ) or return;
+      is_deeply(
+        $hash,
+        {
+          CategoryName => $test->[0],
+          PackageName  => $test->[1],
+          Version      => $test->[2],
+        },
+        'Parse Data is as-expected'
+      );
     };
 
   }
